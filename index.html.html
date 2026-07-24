@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>World Flavors E-Cookbook</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#fff8f0;
+color:#333;
+}
+
+header{
+background:#ff7a18;
+color:white;
+text-align:center;
+padding:30px;
+}
+
+header h1{
+font-size:42px;
+}
+
+header p{
+margin-top:10px;
+}
+
+.controls{
+text-align:center;
+padding:20px;
+background:white;
+}
+
+#search{
+width:60%;
+padding:12px;
+border:2px solid #ff7a18;
+border-radius:8px;
+}
+
+button{
+padding:12px 15px;
+border:none;
+background:#ff7a18;
+color:white;
+border-radius:8px;
+cursor:pointer;
+margin:5px;
+}
+
+button:hover{
+background:#e65f00;
+}
+
+.recipe-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.recipe-card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.recipe-card:hover{
+transform:translateY(-5px);
+}
+
+.recipe-category{
+color:#ff7a18;
+font-weight:bold;
+}
+
+.favorite{
+float:right;
+cursor:pointer;
+font-size:20px;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:white;
+padding:25px;
+border-radius:15px;
+width:80%;
+max-width:700px;
+max-height:90vh;
+overflow-y:auto;
+}
+
+.close{
+float:right;
+font-size:28px;
+cursor:pointer;
+}
+
+.dark{
+background:#1e1e1e;
+color:white;
+}
+
+.dark .recipe-card{
+background:#2d2d2d;
+color:white;
+}
+
+.dark .controls{
+background:#2d2d2d;
+}
+
+footer{
+background:#ff7a18;
+color:white;
+text-align:center;
+padding:15px;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🍳 World Flavors E-Cookbook</h1>
+<p>Indian • Chinese • European • Drinks • Snacks</p>
+</header>
+
+<div class="controls">
+
+<input type="text" id="search" placeholder="Search recipes...">
+
+<button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+</div>
+
+<div id="recipeGrid" class="recipe-grid"></div>
+
+<div id="recipeModal" class="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="closeModal()">&times;</span>
+
+<div id="modalBody"></div>
+
+</div>
+
+</div>
+
+<footer>
+World Flavors E-Cookbook © 2026
+</footer>
+
+<script>
+const recipes = [
+
+{
+id:1,
+title:"Masala Dosa",
+category:"South Indian",
+description:"Crispy dosa with potato filling.",
+ingredients:[
+"Dosa Batter",
+"Potatoes",
+"Onions",
+"Mustard Seeds",
+"Green Chillies"
+],
+instructions:[
+"Prepare potato masala.",
+"Spread dosa batter on hot tawa.",
+"Add filling.",
+"Fold and serve hot."
+]
+},
+
+{
+id:2,
+title:"Traditional Sambar",
+category:"South Indian",
+description:"Tangy lentil stew with vegetables.",
+ingredients:[
+"Toor Dal",
+"Vegetables",
+"Tamarind",
+"Sambar Powder"
+],
+instructions:[
+"Cook dal.",
+"Cook vegetables.",
+"Add tamarind extract.",
+"Mix with dal and simmer."
+]
+},
+
+{
+id:3,
+title:"Coconut Chutney",
+category:"South Indian",
+description:"Classic coconut side dish.",
+ingredients:[
+"Fresh Coconut",
+"Green Chillies",
+"Ginger",
+"Fried Gram"
+],
+instructions:[
+"Blend ingredients.",
+"Prepare tempering.",
+"Pour tempering over chutney."
+]
+},
+
+{
+id:4,
+title:"Dal Makhani",
+category:"North Indian",
+description:"Creamy black lentils cooked slowly.",
+ingredients:[
+"Black Lentils",
+"Rajma",
+"Butter",
+"Cream"
+],
+instructions:[
+"Soak lentils overnight.",
+"Pressure cook.",
+"Prepare gravy.",
+"Simmer with cream."
+]
+},
+
+{
+id:5,
+title:"Paneer Tikka",
+category:"North Indian",
+description:"Marinated grilled paneer.",
+ingredients:[
+"Paneer",
+"Yogurt",
+"Capsicum",
+"Onion"
+],
+instructions:[
+"Prepare marinade.",
+"Marinate paneer.",
+"Thread on skewers.",
+"Grill and serve."
+]
+},
+
+{
+id:6,
+title:"Vegetable Fried Rice",
+category:"Chinese",
+description:"Quick vegetable fried rice.",
+ingredients:[
+"Rice",
+"Carrot",
+"Peas",
+"Soy Sauce"
+],
+instructions:[
+"Cook vegetables.",
+"Add rice.",
+"Add soy sauce.",
+"Serve hot."
+]
+},
+
+{
+id:7,
+title:"Veg Manchurian",
+category:"Chinese",
+description:"Vegetable balls tossed in sauce.",
+ingredients:[
+"Cabbage",
+"Carrot",
+"Cornflour",
+"Soy Sauce"
+],
+instructions:[
+"Prepare vegetable balls.",
+"Deep fry.",
+"Prepare sauce.",
+"Mix and serve."
+]
+},
+
+{
+id:8,
+title:"Kung Pao Chicken",
+category:"Chinese",
+description:"Spicy chicken stir fry.",
+ingredients:[
+"Chicken",
+"Peanuts",
+"Garlic",
+"Soy Sauce"
+],
+instructions:[
+"Marinate chicken.",
+"Cook chicken.",
+"Add sauce.",
+"Add peanuts."
+]
+},
+
+{
+id:9,
+title:"Creamy Alfredo Pasta",
+category:"European",
+description:"Classic creamy Italian pasta.",
+ingredients:[
+"Pasta",
+"Butter",
+"Cream",
+"Parmesan Cheese"
+],
+instructions:[
+"Boil pasta.",
+"Prepare sauce.",
+"Mix together.",
+"Serve hot."
+]
+},
+
+{
+id:10,
+title:"Margherita Pizza",
+category:"European",
+description:"Classic Italian pizza.",
+ingredients:[
+"Pizza Dough",
+"Tomato Sauce",
+"Mozzarella",
+"Basil"
+],
+instructions:[
+"Spread sauce.",
+"Add cheese.",
+"Bake.",
+"Garnish with basil."
+]
+},
+
+{
+id:11,
+title:"Spaghetti Carbonara",
+category:"European",
+description:"Rich pasta with eggs and cheese.",
+ingredients:[
+"Spaghetti",
+"Eggs",
+"Parmesan",
+"Bacon"
+],
+instructions:[
+"Cook pasta.",
+"Prepare egg mixture.",
+"Combine.",
+"Serve immediately."
+]
+},
+
+{
+id:12,
+title:"French Onion Soup",
+category:"European",
+description:"Traditional French onion soup.",
+ingredients:[
+"Onions",
+"Butter",
+"Broth",
+"Bread"
+],
+instructions:[
+"Caramelize onions.",
+"Add broth.",
+"Simmer.",
+"Serve with toasted bread."
+]
+},
+
+{
+id:13,
+title:"Ratatouille",
+category:"European",
+description:"French vegetable dish.",
+ingredients:[
+"Eggplant",
+"Zucchini",
+"Tomatoes",
+"Garlic"
+],
+instructions:[
+"Slice vegetables.",
+"Arrange in baking dish.",
+"Bake until tender."
+]
+},
+
+{
+id:14,
+title:"Spanish Tortilla",
+category:"European",
+description:"Potato and egg omelette.",
+ingredients:[
+"Potatoes",
+"Eggs",
+"Onions",
+"Olive Oil"
+],
+instructions:[
+"Cook potatoes.",
+"Mix with eggs.",
+"Cook both sides.",
+"Serve warm."
+]
+},
+
+{
+id:15,
+title:"Greek Salad",
+category:"European",
+description:"Fresh Mediterranean salad.",
+ingredients:[
+"Tomatoes",
+"Cucumber",
+"Feta Cheese",
+"Olives"
+],
+instructions:[
+"Chop vegetables.",
+"Add feta.",
+"Toss gently.",
+"Serve chilled."
+]
+},
+
+{
+id:16,
+title:"Belgian Waffles",
+category:"European",
+description:"Light and fluffy waffles.",
+ingredients:[
+"Flour",
+"Eggs",
+"Milk",
+"Butter"
+],
+instructions:[
+"Prepare batter.",
+"Cook in waffle maker.",
+"Serve warm."
+]
+},
+
+{
+id:17,
+title:"Coffee",
+category:"Drinks",
+description:"Simple hot coffee.",
+ingredients:[
+"Coffee Powder",
+"Milk",
+"Sugar"
+],
+instructions:[
+"Boil milk.",
+"Add coffee.",
+"Mix and serve."
+]
+},
+
+{
+id:18,
+title:"Banana Milkshake",
+category:"Drinks",
+description:"Refreshing banana milkshake.",
+ingredients:[
+"Banana",
+"Milk",
+"Sugar"
+],
+instructions:[
+"Blend ingredients.",
+"Serve chilled."
+]
+},
+
+{
+id:19,
+title:"French Fries",
+category:"Snacks",
+description:"Crispy potato fries.",
+ingredients:[
+"Potatoes",
+"Oil",
+"Salt"
+],
+instructions:[
+"Cut potatoes.",
+"Deep fry.",
+"Add salt."
+]
+},
+{
+id:20,
+title:"Egg Toast",
+category:"Snacks",
+description:"Quick egg toast.",
+ingredients:[
+"Bread",
+"Egg",
+"Butter"
+],
+instructions:[
+"Dip bread in egg.",
+"Toast both sides.",
+"Serve hot."
+]
+},
+
+{
+id:21,
+title:"Idli",
+category:"South Indian",
+description:"Soft steamed rice cakes.",
+ingredients:["Idli Batter"],
+instructions:[
+"Pour batter into idli moulds.",
+"Steam for 10 minutes.",
+"Serve with chutney."
+]
+},
+
+{
+id:22,
+title:"Medu Vada",
+category:"South Indian",
+description:"Crispy lentil doughnuts.",
+ingredients:["Urad Dal","Green Chilli","Oil"],
+instructions:[
+"Soak urad dal.",
+"Grind into batter.",
+"Shape into vadas.",
+"Deep fry until golden."
+]
+},
+
+{
+id:23,
+title:"Upma",
+category:"South Indian",
+description:"Savory semolina breakfast.",
+ingredients:["Rava","Onion","Mustard Seeds"],
+instructions:[
+"Roast rava.",
+"Cook onions and spices.",
+"Add water and rava.",
+"Cook until fluffy."
+]
+},
+
+{
+id:24,
+title:"Poha",
+category:"Indian",
+description:"Flattened rice breakfast.",
+ingredients:["Poha","Onion","Turmeric"],
+instructions:[
+"Wash poha.",
+"Cook onions.",
+"Add spices and poha.",
+"Mix and serve."
+]
+},
+
+{
+id:25,
+title:"Paneer Butter Masala",
+category:"North Indian",
+description:"Creamy paneer curry.",
+ingredients:["Paneer","Tomato","Butter","Cream"],
+instructions:[
+"Prepare tomato gravy.",
+"Add paneer.",
+"Cook for 10 minutes.",
+"Finish with cream."
+]
+},
+
+{
+id:26,
+title:"Chole Bhature",
+category:"North Indian",
+description:"Spicy chickpeas with fried bread.",
+ingredients:["Chickpeas","Onion","Tomato","Bhature"],
+instructions:[
+"Cook chickpeas.",
+"Prepare masala.",
+"Fry bhature.",
+"Serve together."
+]
+},
+
+{
+id:27,
+title:"Rajma Chawal",
+category:"North Indian",
+description:"Kidney beans served with rice.",
+ingredients:["Rajma","Rice","Onion","Tomato"],
+instructions:[
+"Cook rajma.",
+"Prepare gravy.",
+"Simmer together.",
+"Serve with rice."
+]
+},
+
+{
+id:28,
+title:"Aloo Paratha",
+category:"North Indian",
+description:"Stuffed potato flatbread.",
+ingredients:["Flour","Potato","Spices"],
+instructions:[
+"Prepare dough.",
+"Make filling.",
+"Stuff and roll.",
+"Cook on tawa."
+]
+},
+
+{
+id:29,
+title:"Hakka Noodles",
+category:"Chinese",
+description:"Vegetable stir-fried noodles.",
+ingredients:["Noodles","Carrot","Cabbage","Soy Sauce"],
+instructions:[
+"Boil noodles.",
+"Cook vegetables.",
+"Add noodles and sauce.",
+"Serve hot."
+]
+},
+
+{
+id:30,
+title:"Spring Rolls",
+category:"Chinese",
+description:"Crispy vegetable rolls.",
+ingredients:["Spring Roll Sheets","Cabbage","Carrot"],
+instructions:[
+"Prepare filling.",
+"Roll sheets.",
+"Deep fry.",
+"Serve hot."
+]
+},
+
+{
+id:31,
+title:"Hot and Sour Soup",
+category:"Chinese",
+description:"Spicy and tangy soup.",
+ingredients:["Vegetables","Soy Sauce","Vinegar"],
+instructions:[
+"Cook vegetables.",
+"Add seasonings.",
+"Simmer.",
+"Serve hot."
+]
+},
+
+{
+id:32,
+title:"Paella",
+category:"European",
+description:"Traditional Spanish rice dish.",
+ingredients:["Rice","Peas","Bell Peppers","Chicken"],
+instructions:[
+"Cook vegetables.",
+"Add rice.",
+"Add stock.",
+"Cook until done."
+]
+},
+
+{
+id:33,
+title:"Moussaka",
+category:"European",
+description:"Greek baked casserole.",
+ingredients:["Eggplant","Potato","Tomato Sauce"],
+instructions:[
+"Layer ingredients.",
+"Bake until golden.",
+"Serve warm."
+]
+},
+
+{
+id:34,
+title:"Schnitzel",
+category:"European",
+description:"Breaded fried cutlet.",
+ingredients:["Chicken","Egg","Breadcrumbs"],
+instructions:[
+"Coat chicken.",
+"Dip in egg.",
+"Cover in breadcrumbs.",
+"Fry until golden."
+]
+},
+
+{
+id:35,
+title:"Curd Rice",
+category:"South Indian",
+description:"Rice mixed with yogurt.",
+ingredients:["Rice","Curd","Mustard Seeds"],
+instructions:[
+"Mix rice and curd.",
+"Prepare tempering.",
+"Pour over rice.",
+"Serve chilled."
+]
+},
+
+{
+id:36,
+title:"Lemon Rice",
+category:"South Indian",
+description:"Tangy flavored rice.",
+ingredients:["Rice","Lemon","Peanuts"],
+instructions:[
+"Cook rice.",
+"Prepare tempering.",
+"Add lemon juice.",
+"Mix and serve."
+]
+},
+
+{
+id:37,
+title:"Mango Lassi",
+category:"Drinks",
+description:"Refreshing mango yogurt drink.",
+ingredients:["Mango","Yogurt","Sugar"],
+instructions:[
+"Blend ingredients.",
+"Serve chilled."
+]
+},
+
+{
+id:38,
+title:"Lemonade",
+category:"Drinks",
+description:"Refreshing lemon drink.",
+ingredients:["Lemon","Water","Sugar"],
+instructions:[
+"Mix ingredients.",
+"Add ice.",
+"Serve cold."
+]
+},
+
+{
+id:39,
+title:"Hot Chocolate",
+category:"Drinks",
+description:"Rich chocolate beverage.",
+ingredients:["Milk","Cocoa Powder","Sugar"],
+instructions:[
+"Heat milk.",
+"Add cocoa.",
+"Mix well.",
+"Serve hot."
+]
+},
+
+{
+id:40,
+title:"Garlic Bread",
+category:"Snacks",
+description:"Toasted garlic-flavored bread.",
+ingredients:["Bread","Butter","Garlic"],
+instructions:[
+"Spread garlic butter.",
+"Toast in oven.",
+"Serve warm."
+]
+}
+];
+// Display Recipes
+
+function displayRecipes(recipeList){
+
+const grid = document.getElementById("recipeGrid");
+
+grid.innerHTML = "";
+
+recipeList.forEach(recipe => {
+
+grid.innerHTML += `
+<div class="recipe-card">
+
+<span class="favorite" onclick="toggleFavorite(this)">❤️</span>
+
+<p class="recipe-category">${recipe.category}</p>
+
+<h2>${recipe.title}</h2>
+
+<p>${recipe.description}</p>
+
+<br>
+
+<button onclick="openRecipe(${recipe.id})">
+View Recipe
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+// Open Recipe Modal
+
+function openRecipe(id){
+
+const recipe = recipes.find(r => r.id === id);
+
+document.getElementById("modalBody").innerHTML = `
+
+<h2>${recipe.title}</h2>
+
+<p><strong>Category:</strong> ${recipe.category}</p>
+
+<br>
+
+<h3>Ingredients</h3>
+
+<ul>
+${recipe.ingredients.map(i => `<li>${i}</li>`).join("")}
+</ul>
+
+<br>
+
+<h3>Instructions</h3>
+
+<ol>
+${recipe.instructions.map(i => `<li>${i}</li>`).join("")}
+</ol>
+
+`;
+
+document.getElementById("recipeModal").style.display = "flex";
+
+}
+
+// Close Modal
+
+function closeModal(){
+
+document.getElementById("recipeModal").style.display = "none";
+
+}
+
+// Search Function
+
+document.getElementById("search").addEventListener("keyup", function(){
+
+let value = this.value.toLowerCase();
+
+let filtered = recipes.filter(recipe =>
+
+recipe.title.toLowerCase().includes(value) ||
+
+recipe.category.toLowerCase().includes(value) ||
+
+recipe.description.toLowerCase().includes(value)
+
+);
+
+displayRecipes(filtered);
+
+});
+
+// Favorites
+
+function toggleFavorite(element){
+
+if(element.innerHTML === "❤️"){
+
+element.innerHTML = "💖";
+
+}
+
+else{
+
+element.innerHTML = "❤️";
+
+}
+
+}
+
+// Dark Mode
+
+function toggleDarkMode(){
+
+document.body.classList.toggle("dark");
+
+}
+
+// Initial Load
+
+displayRecipes(recipes);
+
+</script>
+
+</body>
+</html>
